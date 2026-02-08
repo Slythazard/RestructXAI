@@ -1,6 +1,8 @@
-from flask import Flask,Blueprint
+from flask import Blueprint
 from .reasoning import reason
-from .vision_out import vision 
+from .vision_out import vision
+
+endpoints = Blueprint('endpoints',__name__,url_prefix='/endpoints')
 
 endpoints.register_blueprint(vision,url_prefix='/vision')
 endpoints.register_blueprint(reason,url_prefix='/reason')
