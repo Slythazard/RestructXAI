@@ -1,0 +1,84 @@
+services:
+  redis:
+    image: redis:8
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: .
+      dockerfile: ./frontend_test/Dockerfile
+    container_name: frontend-demo
+    ports:
+      - "8002:80"
+    volumes:
+      - ./frontend_test/index.html:/usr/share/nginx/html/index.html
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./services/api-gateway/Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8000:5000"
+    volumes:
+      - ./services/api-gateway/src:/app/services/api-gateway/src
+      # - /app/.venv
+    depends_on:
+      - rabbitmq
+      - redis
+    environment:
+      RABBITMQ_SERVER_URL: amqp://guest:guest@rabbitmq:5672/
+      REDIS_SERVER_URL: redis://redis:6379
+    restart: unless-stopped
+
+  ingestion:
+    build:
+      context: .
+      dockerfile: ./services/ingestion/Dockerfile
+    container_name: ingestion
+    ports:
+      - "8001:5001"
+    volumes:
+      - ./services/ingestion/src:/app/services/ingestion/src
+      # - /app/.venv
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api-gateway:
+        condition: service_started
+    environment:
+      RABBITMQ_SERVER_URL: amqp://guest:guest@rabbitmq:5672/
+      REDIS_SERVER_URL: redis://redis:6379
+    restart: unless-stopped
+
+volumes:
+  rabbitmq_data:
+    driver: local

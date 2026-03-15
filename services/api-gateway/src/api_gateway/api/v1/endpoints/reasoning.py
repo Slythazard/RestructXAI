@@ -1,6 +1,7 @@
 from flask import Blueprint
 
-reason = Blueprint('reason',__name__)
+reason = Blueprint('reason', __name__)
+
 
 @reason.route('/')
 def main_handler():

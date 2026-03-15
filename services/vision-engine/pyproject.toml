@@ -4,13 +4,22 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = [
-    "paddleocr>=3.4.0",
-    "paddlepaddle-gpu>=2.6.2",
-]
-
+dependencies = ["flask>=3.1.2", "paddleocr[all]", "paddlepaddle-gpu==3.2.0"]
 [project.scripts]
-vision-engine = "vision_engine:main"
+vision-ocr = "vision_engine.pp_ocr.ocr:main"
+vision-layout = "vision_engine.pp_structure.main:parseLayout"
+
+[tool.uv.sources]
+paddlepaddle-gpu = { index = "paddle" }
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"
+default = true
+
+[[tool.uv.index]]
+name = "paddle"
+url = "https://www.paddlepaddle.org.cn/packages/stable/cu126/"
 
 [build-system]
 requires = ["uv_build>=0.9.10,<0.10.0"]

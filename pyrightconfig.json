@@ -1,0 +1,14 @@
+{
+  "venvPath": ".",
+  "venv": ".venv",
+  "extraPaths": [
+    "services/vision-engine",
+    "services/reasoning-engine",
+    "services/api-gateway",
+    "services/graph-manager",
+    "services/ingestion",
+    "services/rag-orchestrator",
+    "services/med-analyzer",
+    "services/logic-gate"
+  ]
+}
