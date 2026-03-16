@@ -23,7 +23,7 @@ def ingestion_task(self, data):
 
     logger.info("Done Ingestion")
 
-    result = "image processed"
+    result = f"image processed{data}"
 
     sio.emit('task_update', result, to=self.request.id)
 

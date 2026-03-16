@@ -7,7 +7,7 @@ __pycache__/
 # uv & Environment
 .python-version
 .env
-uv.lock
+# uv.lock
 
 # AI Models & Data (Crucial)
 **/models/

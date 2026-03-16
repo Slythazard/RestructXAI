@@ -5,12 +5,19 @@
     <script src="https://cdn.jsdelivr.net/npm/axios@1.13.2/dist/axios.min.js"></script>
   </head>
   <body>
-    <h1 id="task-update"></h1>
+    <h1 id="task-update">Input Image</h1>
+    <form>
+      <input type="file" name="upload-in" value="Upload Document" />
+      <button type="submit" id="upload-btn" onclick="startTask(event)">
+        Upload
+      </button>
+    </form>
     <script>
       const socket = io("http://localhost:8000");
       const updater = document.getElementById("task-update");
 
-      async function startTask() {
+      async function startTask(event) {
+        event.preventDefault();
         try {
           const response = await axios.get(
             "http://localhost:8000/api/v1/endpoints/ingestion",
@@ -28,7 +35,6 @@
 
       socket.on("connect", () => {
         console.log("connected:", socket.id);
-        startTask();
       });
 
       socket.on("task_update", (data) => {

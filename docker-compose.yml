@@ -36,8 +36,14 @@ services:
     container_name: frontend-demo
     ports:
       - "8002:80"
+    # develop:
+    #   watch:
+    #     - action: sync+restart
+    #       path: ./frontend_test/index.html
+    #       target: /usr/share/nginx/html/index.html
     volumes:
       - ./frontend_test/index.html:/usr/share/nginx/html/index.html
+      - ./frontend_test/nginx.conf:/etc/nginx/conf.d/default.conf
 
   api-gateway:
     build:
