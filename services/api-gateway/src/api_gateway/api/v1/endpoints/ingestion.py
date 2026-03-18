@@ -23,7 +23,7 @@ def room_handler(data):
     join_room(data["task_id"])
 
 
-@ingestion.route('/')
+@ingestion.route('/', methods=['POST', 'GET'])
 def handler_ingestion():
 
     file_url = 'some_url'
