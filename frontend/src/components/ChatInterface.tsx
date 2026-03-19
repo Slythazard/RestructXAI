@@ -1,28 +1,28 @@
- import { io } from "socket.io-client";
- import { useState, useRef, useEffect} from "react";
+import { io } from "socket.io-client";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { ScrollArea } from "./ui/scroll-area";
-import { 
-  Send, 
-  Paperclip, 
-  Plus, 
-  BarChart3, 
+import {
+  Send,
+  Paperclip,
+  Plus,
+  BarChart3,
   MessageSquare,
   User,
   Menu,
   X,
-  ArrowLeft
+  ArrowLeft,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer 
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
 } from "recharts";
 import ForceGraph2D from "react-force-graph-2d";
 
@@ -71,51 +71,62 @@ export function ChatInterface({ onBack }: ChatInterfaceProps) {
   }, [messages]);
 
   useEffect(() => {
-  return () => {
-    socketRef.current?.disconnect();
-  };
-}, []);
-const connectSocket = (roomId: string) => {
-
-  // 🔥 Close previous socket if exists
-  if (socketRef.current) {
-    socketRef.current.disconnect();
-  }
-
-  const socket = io("http://localhost:8000", {
-    transports: ["websocket"],
-  });
-
-  socketRef.current = socket;
-
-  socket.on("connect", () => {
-    console.log("Socket connected:", socket.id);
-    socket.emit("join_room", { room_id: roomId });
-  });
-
-  socket.on("task_update", (data: any) => {
-    console.log("Task Update:", data);
-
-    const aiMessage: Message = {
-      id: Date.now().toString(),
-      role: "ai",
-      content: data.message || "Processing...",
-      hasVisualization: !!data.chart_data,
-      data: data.chart_data,
+    return () => {
+      socketRef.current?.disconnect();
     };
+  }, []);
+  const connectSocket = (roomId: string) => {
+    // 🔥 Close previous socket if exists
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+    }
 
-    setMessages((prev: Message[]) => [...prev, aiMessage]);
-  });
+    const socket = io("http://localhost:8000", {
+      transports: ["websocket"],
+    });
 
-  socket.on("disconnect", () => {
-    console.log("Socket disconnected");
-  });
-};
+    socketRef.current = socket;
+
+    socket.on("connect", () => {
+      console.log("Socket connected:", socket.id);
+      socket.emit("join_room", { taskId: roomId });
+    });
+
+    // socket.emit("join_room", { taskId: roomId });
+
+    socket.on("task_update", (data: any) => {
+      console.log("Task Update:", data);
+
+      const aiMessage: Message = {
+        id: Date.now().toString(),
+        role: "ai",
+        content: data.message || "Processing...",
+        hasVisualization: !!data.chart_data,
+        data: data.chart_data,
+      };
+
+      setMessages((prev: Message[]) => [...prev, aiMessage]);
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Socket disconnected");
+    });
+  };
 
   const detectDataInMessage = (content: string): boolean => {
-    const dataKeywords = ["visualize", "chart", "graph", "plot", "data", "numbers", "show me"];
+    const dataKeywords = [
+      "visualize",
+      "chart",
+      "graph",
+      "plot",
+      "data",
+      "numbers",
+      "show me",
+    ];
     const hasNumbers = /\d+/.test(content);
-    const hasKeywords = dataKeywords.some(keyword => content.toLowerCase().includes(keyword));
+    const hasKeywords = dataKeywords.some((keyword) =>
+      content.toLowerCase().includes(keyword),
+    );
     return hasNumbers || hasKeywords;
   };
 
@@ -130,13 +141,12 @@ const connectSocket = (roomId: string) => {
       "mind map",
       "concept map",
       "show connections",
-      "show relationships"
+      "show relationships",
     ];
-    return knowledgeGraphKeywords.some(keyword => 
-      content.toLowerCase().includes(keyword)
+    return knowledgeGraphKeywords.some((keyword) =>
+      content.toLowerCase().includes(keyword),
     );
   };
-
 
   // const connectWebSocket = (roomId: string) => {
 
@@ -147,31 +157,31 @@ const connectSocket = (roomId: string) => {
   // socket.onopen = () => {
   //   console.log("WebSocket connected");
   // };
-  
-//   socket.onmessage = (event) => {
-//     const data = JSON.parse(event.data);
 
-//     console.log("Socket message:", data);
+  //   socket.onmessage = (event) => {
+  //     const data = JSON.parse(event.data);
 
-//     const aiMessage: Message = {
-//       id: Date.now().toString(),
-//       role: "ai",
-//       content: data.message || "Processing update received",
-//       hasVisualization: data.chart_data ? true : false,
-//       data: data.chart_data,
-//     };
+  //     console.log("Socket message:", data);
 
-//     setMessages(prev => [...prev, aiMessage]);
-//   };
+  //     const aiMessage: Message = {
+  //       id: Date.now().toString(),
+  //       role: "ai",
+  //       content: data.message || "Processing update received",
+  //       hasVisualization: data.chart_data ? true : false,
+  //       data: data.chart_data,
+  //     };
 
-//   socket.onerror = (error) => {
-//     console.error("WebSocket error:", error);
-//   };
+  //     setMessages(prev => [...prev, aiMessage]);
+  //   };
 
-//   socket.onclose = () => {
-//     console.log("WebSocket disconnected");
-//   };
-// };
+  //   socket.onerror = (error) => {
+  //     console.error("WebSocket error:", error);
+  //   };
+
+  //   socket.onclose = () => {
+  //     console.log("WebSocket disconnected");
+  //   };
+  // };
 
   const fetchKnowledgeGraphData = async (query: string): Promise<GraphData> => {
     // Mock API call - simulating microservice response
@@ -181,14 +191,15 @@ const connectSocket = (roomId: string) => {
     //   body: JSON.stringify({ query })
     // });
     // return await response.json();
-    
+
     return new Promise((resolve) => {
       setTimeout(() => {
         // Generate dynamic mock data based on query
-        const isAITopic = query.toLowerCase().includes("ai") || 
-                          query.toLowerCase().includes("artificial intelligence") ||
-                          query.toLowerCase().includes("machine learning");
-        
+        const isAITopic =
+          query.toLowerCase().includes("ai") ||
+          query.toLowerCase().includes("artificial intelligence") ||
+          query.toLowerCase().includes("machine learning");
+
         if (isAITopic) {
           resolve({
             nodes: [
@@ -203,7 +214,7 @@ const connectSocket = (roomId: string) => {
               { id: "RNN", label: "Recurrent NN", val: 12 },
               { id: "Transformer", label: "Transformers", val: 16 },
               { id: "GPT", label: "GPT Models", val: 14 },
-              { id: "Data", label: "Data Science", val: 15 }
+              { id: "Data", label: "Data Science", val: 15 },
             ],
             links: [
               { source: "AI", target: "ML" },
@@ -219,8 +230,8 @@ const connectSocket = (roomId: string) => {
               { source: "ML", target: "CV" },
               { source: "CV", target: "CNN" },
               { source: "AI", target: "Data" },
-              { source: "Data", target: "ML" }
-            ]
+              { source: "Data", target: "ML" },
+            ],
           });
         } else {
           // Generic knowledge graph
@@ -233,7 +244,7 @@ const connectSocket = (roomId: string) => {
               { id: "A1", label: "Sub-concept A1", val: 12 },
               { id: "A2", label: "Sub-concept A2", val: 12 },
               { id: "B1", label: "Sub-concept B1", val: 12 },
-              { id: "C1", label: "Sub-concept C1", val: 12 }
+              { id: "C1", label: "Sub-concept C1", val: 12 },
             ],
             links: [
               { source: "Root", target: "A" },
@@ -244,8 +255,8 @@ const connectSocket = (roomId: string) => {
               { source: "B", target: "B1" },
               { source: "C", target: "C1" },
               { source: "A", target: "B" },
-              { source: "B", target: "C" }
-            ]
+              { source: "B", target: "C" },
+            ],
           });
         }
       }, 800);
@@ -288,7 +299,7 @@ const connectSocket = (roomId: string) => {
 
     // Check for knowledge graph request first
     const isKnowledgeGraphRequest = detectKnowledgeGraphRequest(currentInput);
-    
+
     if (isKnowledgeGraphRequest) {
       // Handle knowledge graph request
       try {
@@ -296,7 +307,8 @@ const connectSocket = (roomId: string) => {
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: "ai",
-          content: "I've generated a knowledge graph visualization showing the relationships and connections. You can drag nodes to explore, zoom in/out, and hover over nodes to see details.",
+          content:
+            "I've generated a knowledge graph visualization showing the relationships and connections. You can drag nodes to explore, zoom in/out, and hover over nodes to see details.",
           hasKnowledgeGraph: true,
           graphData: graphData,
         };
@@ -305,7 +317,8 @@ const connectSocket = (roomId: string) => {
         const errorMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: "ai",
-          content: "Sorry, I encountered an error generating the knowledge graph. Please try again.",
+          content:
+            "Sorry, I encountered an error generating the knowledge graph. Please try again.",
         };
         setMessages((prev: Message[]) => [...prev, errorMessage]);
       }
@@ -316,7 +329,7 @@ const connectSocket = (roomId: string) => {
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: "ai",
-          content: shouldVisualize 
+          content: shouldVisualize
             ? "I've created a visualization of your data below. The chart shows the trend over time with key insights highlighted."
             : "I understand you want to work with your data. Could you share some specific data points or upload a file so I can create beautiful visualizations for you?",
           hasVisualization: shouldVisualize,
@@ -339,87 +352,88 @@ const connectSocket = (roomId: string) => {
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  const file = e.target.files?.[0];
-  if (!file) return;
+    e.target.value = "";
 
-  const userMessage: Message = {
-    id: Date.now().toString(),
-    role: "user",
-    content: `Uploaded file: ${file.name}`,
-  };
-
-  setMessages((prev:Message[])=> [...prev, userMessage]);
-
-  const formData = new FormData();
-  formData.append("file", file);
-
-  try {
-    const response = await fetch("http://localhost:8000/api/v1/endpoints/ingestion", {
-      method: "POST",
-      body: formData
-    });
-
-    const data = await response.json();
-
-    console.log("Upload response:", data);
-
-    // 🔥 IMPORTANT CHANGE
-    if (data.room_id) {
-      connectSocket(data.room_id);
-    }
-
-    const aiMessage: Message = {
+    const userMessage: Message = {
       id: Date.now().toString(),
-      role: "ai",
-      content: `Processing started. Task ID: ${data.task_id}`,
+      role: "user",
+      content: `Uploaded file: ${file.name}`,
     };
 
-    setMessages((prev: Message[]) => [...prev, aiMessage]);
+    setMessages((prev: Message[]) => [...prev, userMessage]);
 
-  } catch (error) {
-    console.error("Upload failed:", error);
+    try {
+      const uplReqResponse = await fetch(
+        "http://localhost:8000/api/v1/endpoints/ingestion/upload",
+        {
+          method: "GET",
+        },
+      );
 
-    setMessages((prev: Message[]) => [...prev, {
-      id: Date.now().toString(),
-      role: "ai",
-      content: "Error uploading file"
-    }]);
-  }
-};
-//     const data = await response.json();
+      const { file_id, object_key, url } = await uplReqResponse.json();
 
-//     console.log("Backend Response:", data);
+      console.log(url);
 
-//     const aiMessage: Message = {
-//       id: (Date.now() + 1).toString(),
-//       role: "ai",
-//       content: "File processed successfully. Here is the visualization:",
-//       hasVisualization: true,
-//       data: data.chart_data || generateMockData()
-//     };
+      const uploadResponse = await fetch(url, {
+        method: "PUT",
+        body: file,
+        // headers: {
+        //   "Content-Type": file.type || "application/octect-stream",
+        // },
+      });
 
-//     setMessages(prev => [...prev, aiMessage]);
+      if (!uploadResponse.ok) {
+        throw new Error("Upload Failed");
+      }
 
-//   } catch (error) {
-//     console.error("Upload failed:", error);
+      const processResponse = await fetch(
+        "http://localhost:8000/api/v1/endpoints/ingestion/process",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            object_key: object_key,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
 
-//     const aiMessage: Message = {
-//       id: (Date.now() + 1).toString(),
-//       role: "ai",
-//       content: "Error processing file. Please try again."
-//     };
+      const processData = await processResponse.json();
 
-//     setMessages(prev => [...prev, aiMessage]);
-//   }
-// };
+      console.log(`Processing Started....${processData}`);
+
+      const aiMessage: Message = {
+        id: Date.now().toString(),
+        role: "ai",
+        content: `Processing started. Task ID: ${processData.task}`,
+      };
+
+      connectSocket(processData.task);
+      setMessages((prev) => [...prev, aiMessage]);
+    } catch (error) {
+      console.error("Upload failed:", error);
+
+      setMessages((prev: Message[]) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          role: "ai",
+          content: "Error uploading file",
+        },
+      ]);
+    }
+  };
 
   const handleNewChat = () => {
     setMessages([]);
   };
 
   const calculateStats = (data: Array<{ name: string; value: number }>) => {
-    const values = data.map(d => d.value);
+    const values = data.map((d) => d.value);
     const total = values.reduce((sum, val) => sum + val, 0);
     const average = Math.round(total / values.length);
     const peak = Math.max(...values);
@@ -451,10 +465,7 @@ const connectSocket = (roomId: string) => {
             {/* Logo */}
             <div className="p-6 border-b border-white/10">
               <div className="flex items-center space-x-3">
-                <motion.div
-                  className="relative"
-                  whileHover={{ scale: 1.05 }}
-                >
+                <motion.div className="relative" whileHover={{ scale: 1.05 }}>
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 rounded-xl blur-lg opacity-50" />
                   <div className="relative w-12 h-12 bg-gradient-to-r from-blue-400 to-purple-400 rounded-xl flex items-center justify-center">
                     <BarChart3 className="w-6 h-6 text-white" />
@@ -464,7 +475,9 @@ const connectSocket = (roomId: string) => {
                   <h1 className="text-xl bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                     Visualize
                   </h1>
-                  <p className="text-xs text-white/50 uppercase tracking-wider">AI Data Studio</p>
+                  <p className="text-xs text-white/50 uppercase tracking-wider">
+                    AI Data Studio
+                  </p>
                 </div>
               </div>
             </div>
@@ -483,7 +496,10 @@ const connectSocket = (roomId: string) => {
 
             {/* New Chat Button */}
             <div className="p-4">
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
                 <Button
                   onClick={handleNewChat}
                   className="w-full bg-gradient-to-r from-blue-400 to-purple-400 hover:from-blue-500 hover:to-purple-500 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300"
@@ -497,14 +513,18 @@ const connectSocket = (roomId: string) => {
             {/* Chat History */}
             <div className="flex-1 overflow-y-auto px-4">
               <div className="space-y-2">
-                <p className="text-xs text-white/50 uppercase tracking-wider px-2 py-2">Chat History</p>
+                <p className="text-xs text-white/50 uppercase tracking-wider px-2 py-2">
+                  Chat History
+                </p>
                 <motion.div
                   whileHover={{ scale: 1.02, x: 4 }}
                   className="p-3 rounded-lg bg-white/5 hover:bg-white/10 cursor-pointer transition-all duration-200 border border-white/5"
                 >
                   <div className="flex items-center space-x-2">
                     <MessageSquare size={16} className="text-blue-400" />
-                    <span className="text-sm text-white/70 truncate">Sales Data Analysis</span>
+                    <span className="text-sm text-white/70 truncate">
+                      Sales Data Analysis
+                    </span>
                   </div>
                 </motion.div>
                 <motion.div
@@ -513,7 +533,9 @@ const connectSocket = (roomId: string) => {
                 >
                   <div className="flex items-center space-x-2">
                     <MessageSquare size={16} className="text-purple-400" />
-                    <span className="text-sm text-white/70 truncate">Revenue Trends Q3</span>
+                    <span className="text-sm text-white/70 truncate">
+                      Revenue Trends Q3
+                    </span>
                   </div>
                 </motion.div>
                 <motion.div
@@ -522,7 +544,9 @@ const connectSocket = (roomId: string) => {
                 >
                   <div className="flex items-center space-x-2">
                     <MessageSquare size={16} className="text-cyan-400" />
-                    <span className="text-sm text-white/70 truncate">Customer Metrics</span>
+                    <span className="text-sm text-white/70 truncate">
+                      Customer Metrics
+                    </span>
                   </div>
                 </motion.div>
               </div>
@@ -594,12 +618,15 @@ const connectSocket = (roomId: string) => {
                       rows={1}
                       onInput={(e) => {
                         const target = e.target as HTMLTextAreaElement;
-                        target .style.height = "auto";
+                        target.style.height = "auto";
                         target.style.height = target.scrollHeight + "px";
                       }}
                     />
                     <div className="flex items-center space-x-2">
-                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                      <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
                         <Button
                           variant="ghost"
                           size="icon"
@@ -609,7 +636,10 @@ const connectSocket = (roomId: string) => {
                           <Paperclip size={20} className="text-white/70" />
                         </Button>
                       </motion.div>
-                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                      <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
                         <Button
                           size="icon"
                           onClick={handleSend}
@@ -657,7 +687,9 @@ const connectSocket = (roomId: string) => {
                         </motion.div>
                       )}
 
-                      <div className={`flex flex-col space-y-2 ${message.role === "user" ? "items-end" : "items-start"} max-w-2xl`}>
+                      <div
+                        className={`flex flex-col space-y-2 ${message.role === "user" ? "items-end" : "items-start"} max-w-2xl`}
+                      >
                         <div
                           className={`${
                             message.role === "user"
@@ -665,7 +697,9 @@ const connectSocket = (roomId: string) => {
                               : "bg-[#0f0f0f] border border-white/10 text-white rounded-2xl rounded-tl-none shadow-xl"
                           } p-4`}
                         >
-                          <p className="text-sm leading-relaxed">{message.content}</p>
+                          <p className="text-sm leading-relaxed">
+                            {message.content}
+                          </p>
                         </div>
 
                         {message.hasVisualization && message.data && (
@@ -684,18 +718,36 @@ const connectSocket = (roomId: string) => {
                                 <ResponsiveContainer width="100%" height={300}>
                                   <AreaChart data={message.data}>
                                     <defs>
-                                      <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
-                                        <stop offset="95%" stopColor="#9333ea" stopOpacity={0.1} />
+                                      <linearGradient
+                                        id="colorValue"
+                                        x1="0"
+                                        y1="0"
+                                        x2="0"
+                                        y2="1"
+                                      >
+                                        <stop
+                                          offset="5%"
+                                          stopColor="#3b82f6"
+                                          stopOpacity={0.8}
+                                        />
+                                        <stop
+                                          offset="95%"
+                                          stopColor="#9333ea"
+                                          stopOpacity={0.1}
+                                        />
                                       </linearGradient>
                                     </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff15" />
+                                    <CartesianGrid
+                                      strokeDasharray="3 3"
+                                      stroke="#ffffff15"
+                                    />
                                     <XAxis dataKey="name" stroke="#ffffff50" />
                                     <YAxis stroke="#ffffff50" />
                                     <Tooltip
                                       contentStyle={{
                                         backgroundColor: "#0f0f0f",
-                                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                                        border:
+                                          "1px solid rgba(255, 255, 255, 0.1)",
                                         borderRadius: "8px",
                                       }}
                                     />
@@ -715,19 +767,25 @@ const connectSocket = (roomId: string) => {
                                     return (
                                       <>
                                         <div className="text-center p-3 bg-white/5 rounded-lg border border-white/10">
-                                          <p className="text-xs text-white/50 mb-1">Total</p>
+                                          <p className="text-xs text-white/50 mb-1">
+                                            Total
+                                          </p>
                                           <p className="text-lg bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                                             {stats.total.toLocaleString()}
                                           </p>
                                         </div>
                                         <div className="text-center p-3 bg-white/5 rounded-lg border border-white/10">
-                                          <p className="text-xs text-white/50 mb-1">Average</p>
+                                          <p className="text-xs text-white/50 mb-1">
+                                            Average
+                                          </p>
                                           <p className="text-lg bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                                             {stats.average.toLocaleString()}
                                           </p>
                                         </div>
                                         <div className="text-center p-3 bg-white/5 rounded-lg border border-white/10">
-                                          <p className="text-xs text-white/50 mb-1">Peak</p>
+                                          <p className="text-xs text-white/50 mb-1">
+                                            Peak
+                                          </p>
                                           <p className="text-lg bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                                             {stats.peak.toLocaleString()}
                                           </p>
@@ -759,60 +817,94 @@ const connectSocket = (roomId: string) => {
                                     graphData={message.graphData}
                                     nodeLabel="label"
                                     nodeAutoColorBy="id"
-                                    nodeCanvasObject={(node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
+                                    nodeCanvasObject={(
+                                      node: any,
+                                      ctx: CanvasRenderingContext2D,
+                                      globalScale: number,
+                                    ) => {
                                       // Check if node has valid coordinates
-                                      if (typeof node.x !== 'number' || typeof node.y !== 'number' || 
-                                          !isFinite(node.x) || !isFinite(node.y)) {
+                                      if (
+                                        typeof node.x !== "number" ||
+                                        typeof node.y !== "number" ||
+                                        !isFinite(node.x) ||
+                                        !isFinite(node.y)
+                                      ) {
                                         return;
                                       }
 
                                       const label = node.label || node.id;
                                       const fontSize = 12 / globalScale;
                                       ctx.font = `${fontSize}px Sans-Serif`;
-                                      
+
                                       // Highlight important nodes (higher val)
-                                      const isImportant = node.val && node.val > 20;
-                                      const nodeSize = node.val ? node.val / 2.5 : 5;
-                                      
+                                      const isImportant =
+                                        node.val && node.val > 20;
+                                      const nodeSize = node.val
+                                        ? node.val / 2.5
+                                        : 5;
+
                                       // Draw node circle with gradient effect
-                                      const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, nodeSize);
+                                      const gradient = ctx.createRadialGradient(
+                                        node.x,
+                                        node.y,
+                                        0,
+                                        node.x,
+                                        node.y,
+                                        nodeSize,
+                                      );
                                       if (isImportant) {
-                                        gradient.addColorStop(0, '#8b5cf6');
-                                        gradient.addColorStop(1, '#3b82f6');
+                                        gradient.addColorStop(0, "#8b5cf6");
+                                        gradient.addColorStop(1, "#3b82f6");
                                       } else {
-                                        gradient.addColorStop(0, '#6366f1');
-                                        gradient.addColorStop(1, '#3b82f6');
+                                        gradient.addColorStop(0, "#6366f1");
+                                        gradient.addColorStop(1, "#3b82f6");
                                       }
-                                      
+
                                       ctx.beginPath();
-                                      ctx.arc(node.x, node.y, nodeSize, 0, 2 * Math.PI);
+                                      ctx.arc(
+                                        node.x,
+                                        node.y,
+                                        nodeSize,
+                                        0,
+                                        2 * Math.PI,
+                                      );
                                       ctx.fillStyle = gradient;
                                       ctx.fill();
-                                      
+
                                       // Add glow effect for important nodes
                                       if (isImportant) {
-                                        ctx.shadowColor = '#8b5cf6';
+                                        ctx.shadowColor = "#8b5cf6";
                                         ctx.shadowBlur = 15;
                                         ctx.fill();
                                         ctx.shadowBlur = 0;
                                       }
-                                      
+
                                       // Draw border
-                                      ctx.strokeStyle = isImportant ? '#a78bfa' : '#60a5fa';
-                                      ctx.lineWidth = isImportant ? 2 / globalScale : 1.5 / globalScale;
+                                      ctx.strokeStyle = isImportant
+                                        ? "#a78bfa"
+                                        : "#60a5fa";
+                                      ctx.lineWidth = isImportant
+                                        ? 2 / globalScale
+                                        : 1.5 / globalScale;
                                       ctx.stroke();
-                                      
+
                                       // Draw label
-                                      ctx.textAlign = 'center';
-                                      ctx.textBaseline = 'middle';
-                                      ctx.fillStyle = '#ffffff';
-                                      ctx.fillText(label, node.x, node.y + nodeSize + fontSize + 2);
+                                      ctx.textAlign = "center";
+                                      ctx.textBaseline = "middle";
+                                      ctx.fillStyle = "#ffffff";
+                                      ctx.fillText(
+                                        label,
+                                        node.x,
+                                        node.y + nodeSize + fontSize + 2,
+                                      );
                                     }}
-                                    linkColor={() => 'rgba(96, 165, 250, 0.3)'}
+                                    linkColor={() => "rgba(96, 165, 250, 0.3)"}
                                     linkWidth={2}
                                     linkDirectionalParticles={2}
                                     linkDirectionalParticleWidth={2}
-                                    linkDirectionalParticleColor={() => 'rgba(167, 139, 250, 0.6)'}
+                                    linkDirectionalParticleColor={() =>
+                                      "rgba(167, 139, 250, 0.6)"
+                                    }
                                     backgroundColor="#000000"
                                     enableNodeDrag={true}
                                     enableZoomInteraction={true}
@@ -823,9 +915,19 @@ const connectSocket = (roomId: string) => {
                                 </div>
                                 <div className="mt-4 p-4 bg-white/5 rounded-lg border border-white/10">
                                   <p className="text-sm text-white/70">
-                                    <span className="text-blue-400">💡 Tip:</span> Drag nodes to explore relationships, scroll to zoom, and hover to see details. 
-                                    {message.graphData.nodes.some((n: GraphNode) => n.val && n.val > 20) && (
-                                      <span className="text-purple-400"> Larger, glowing nodes indicate key concepts.</span>
+                                    <span className="text-blue-400">
+                                      💡 Tip:
+                                    </span>{" "}
+                                    Drag nodes to explore relationships, scroll
+                                    to zoom, and hover to see details.
+                                    {message.graphData.nodes.some(
+                                      (n: GraphNode) => n.val && n.val > 20,
+                                    ) && (
+                                      <span className="text-purple-400">
+                                        {" "}
+                                        Larger, glowing nodes indicate key
+                                        concepts.
+                                      </span>
                                     )}
                                   </p>
                                 </div>
@@ -870,7 +972,10 @@ const connectSocket = (roomId: string) => {
                         }}
                       />
                       <div className="flex items-center space-x-2">
-                        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <motion.div
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                        >
                           <Button
                             variant="ghost"
                             size="icon"
@@ -880,7 +985,10 @@ const connectSocket = (roomId: string) => {
                             <Paperclip size={20} className="text-white/70" />
                           </Button>
                         </motion.div>
-                        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <motion.div
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                        >
                           <Button
                             size="icon"
                             onClick={handleSend}

@@ -1,4 +1,18 @@
 services:
+  nginx:
+    image: nginx:latest
+    container_name: minio-proxy
+    ports:
+      - "9000:9000"
+    depends_on:
+      - minio
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      app-network:
+        aliases:
+          - miniogw
+
   redis:
     image: redis:8
     container_name: redis
@@ -10,6 +24,8 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    networks:
+      - app-network
 
   rabbitmq:
     image: rabbitmq:4-management
@@ -28,12 +44,48 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - app-network
+
+  minio:
+    image: minio/minio:latest
+    container_name: storage
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+      MINIO_SERVER_URL: "http://miniogw:9000"
+      MINIO_API_CORS_ALLOW_ORIGIN: "*"
+    ports:
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://miniogw:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
 
   frontend:
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile.dev
+    container_name: frontend-dev
+    ports:
+      - "8003:3000"
+    networks:
+      - app-network
+
+  frontend-test:
     build:
       context: .
       dockerfile: ./frontend_test/Dockerfile
     container_name: frontend-demo
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8002:80"
     # develop:
@@ -44,6 +96,8 @@ services:
     volumes:
       - ./frontend_test/index.html:/usr/share/nginx/html/index.html
       - ./frontend_test/nginx.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - app-network
 
   api-gateway:
     build:
@@ -58,10 +112,15 @@ services:
     depends_on:
       - rabbitmq
       - redis
+      - minio
     environment:
       RABBITMQ_SERVER_URL: amqp://guest:guest@rabbitmq:5672/
       REDIS_SERVER_URL: redis://redis:6379
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
     restart: unless-stopped
+    networks:
+      - app-network
 
   ingestion:
     build:
@@ -78,13 +137,23 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      minio:
+        condition: service_healthy
       api-gateway:
         condition: service_started
     environment:
       RABBITMQ_SERVER_URL: amqp://guest:guest@rabbitmq:5672/
       REDIS_SERVER_URL: redis://redis:6379
     restart: unless-stopped
+    networks:
+      - app-network
 
 volumes:
   rabbitmq_data:
     driver: local
+  minio_data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge
