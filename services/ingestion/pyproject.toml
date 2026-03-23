@@ -4,7 +4,11 @@ version = "0.1.0"
 description = "Add your description here"
 # readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["celery[redis]", "flask-socketio>=5.6.0"]
+dependencies = [
+    "celery[redis]",
+    "flask-socketio>=5.6.0",
+    "minio>=7.2.20",
+]
 
 [project.scripts]
 ingestion = "ingestion.celery_app:app"

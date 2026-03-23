@@ -1,15 +1,13 @@
 from paddleocr import PPStructureV3
+import os
 
-layout = PPStructureV3()
+_layout = None
 
 
-def parseLayout():
+def get_layout():
+    global _layout
+    if _layout is None:
+        _layout = PPStructureV3(
+            enable_hpi=True, device=os.getenv("PADDLE_DEVICE", "cpu"))
 
-    result = layout.predict(
-        '/home/Slythazard/Documents/RestructXAI/services/vision-engine/data/ShreshthKatyayan_1001InternshipCompletionLetter_09-12-2025.pdf')
-
-    for res in result:
-        res.save_to_img(
-            '/home/Slythazard/Documents/RestructXAI/services/vision-engine/data/output')
-        res.save_to_json(
-            '/home/Slythazard/Documents/RestructXAI/services/vision-engine/data/output')
+    return _layout

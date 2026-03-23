@@ -1,9 +1,12 @@
-from flask import Flask
-from .api import api
-import logging
-from .sockets import sio
-import os
-from flask_cors import CORS
+import eventlet  # noqa: F401
+eventlet.monkey_patch()  # noqa: F401
+from flask import Flask  # type: ignore
+from .api import api  # type: ignore
+import logging  # type: ignore
+from .sockets import sio  # type: ignore
+import os  # type:ignore
+from flask_cors import CORS  # type: ignore
+
 
 REDIS_SERVER_URL = os.getenv("REDIS_SERVER_URL", "redis://localhost:6379")
 
@@ -38,4 +41,4 @@ def handler():
 
 def main():
     sio.run(app, host='0.0.0.0', port=5000,
-            allow_unsafe_werkzeug=True, debug=True)
+            allow_unsafe_werkzeug=True)

@@ -89,7 +89,8 @@ export function ChatInterface({ onBack }: ChatInterfaceProps) {
 
     socket.on("connect", () => {
       console.log("Socket connected:", socket.id);
-      socket.emit("join_room", { taskId: roomId });
+      console.log("Joining room:", roomId);
+      socket.emit("join_room", { task_id: roomId });
     });
 
     // socket.emit("join_room", { taskId: roomId });
@@ -404,16 +405,17 @@ export function ChatInterface({ onBack }: ChatInterfaceProps) {
 
       const processData = await processResponse.json();
 
-      console.log(`Processing Started....${processData}`);
+      console.log(`Processing Started....${JSON.stringify(processData)}`);
+      if (processData.status === "ingestion.queued") {
+        const aiMessage: Message = {
+          id: Date.now().toString(),
+          role: "ai",
+          content: `Ingestion started. Task ID: ${processData.task_id}`,
+        };
 
-      const aiMessage: Message = {
-        id: Date.now().toString(),
-        role: "ai",
-        content: `Processing started. Task ID: ${processData.task}`,
-      };
-
-      connectSocket(processData.task);
-      setMessages((prev) => [...prev, aiMessage]);
+        connectSocket(processData.task_id);
+        setMessages((prev) => [...prev, aiMessage]);
+      }
     } catch (error) {
       console.error("Upload failed:", error);
 
@@ -1011,7 +1013,7 @@ export function ChatInterface({ onBack }: ChatInterfaceProps) {
         <input
           ref={fileInputRef}
           type="file"
-          accept=".csv,.json,.xlsx,.xls"
+          accept=".csv,.json,.xlsx,.xls,.pdf"
           onChange={handleFileChange}
           className="hidden"
         />

@@ -62,7 +62,7 @@ services:
       - minio_data:/data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://miniogw:9000/minio/health/live"]
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -144,9 +144,38 @@ services:
     environment:
       RABBITMQ_SERVER_URL: amqp://guest:guest@rabbitmq:5672/
       REDIS_SERVER_URL: redis://redis:6379
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
     restart: unless-stopped
     networks:
       - app-network
+
+  # vision-engine:
+  #   build:
+  #     context: .
+  #     dockerfile: ./services/vision-engine/Dockerfile
+  #   container_name: vision-engine
+  #   ports:
+  #     - "8004:5004"
+  #   volumes:
+  #     - ./services/vision-engine/src:/app/services/vision-engine/src
+  #   depends_on:
+  #     rabbitmq:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #     minio:
+  #       condition: service_healthy
+  #     api-gateway:
+  #       condition: service_started
+  #   environment:
+  #     RABBITMQ_SERVER_URL: amqp://guest:guest@rabbitmq:5672/
+  #     REDIS_SERVER_URL: redis://redis:6379
+  #     MINIO_ROOT_USER: minioadmin
+  #     MINIO_ROOT_PASSWORD: minioadmin123
+  #   restart: unless-stopped
+  #   networks:
+  #     - app-network
 
 volumes:
   rabbitmq_data:

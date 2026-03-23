@@ -1,5 +1,5 @@
 from celery import Celery
-from flask import Blueprint, jsonify, request, logging
+from flask import Blueprint, jsonify, request
 from api_gateway.sockets import sio
 from flask_socketio import join_room
 import os
@@ -7,7 +7,6 @@ from minio import Minio
 import uuid
 from datetime import timedelta
 import logging
-from urllib.parse import urlparse, urlunparse
 
 logger = logging.getLogger(__name__)
 
@@ -59,8 +58,8 @@ init_bucket()
 @sio.on('join_room')
 def room_handler(data):
     print(data)
-    print(f"room joined : {data['taskId']}")
-    join_room(data["taskId"])
+    print(f"room joined : {data['task_id']}")
+    join_room(data["task_id"])
 
 
 @ingestion.route('/upload', methods=['POST', 'GET', 'PUT'])
@@ -92,13 +91,22 @@ def handler_ingestion():
 
     response = request.get_json()
 
-    logger.info(response['object_key'])
+    logger.info(f"response from browser after upload : {
+                response}")
+
+    task_id = str(uuid.uuid4())
 
     task = celery.send_task(
-        'ingestion.process', args=[response]
+        'ingestion.process', args=[{
+            "object_key": response["object_key"],
+            "task_id": task_id,
+            "status": "ingestion.queued",
+        }], task_id=task_id,
+        queue='ingestion'
     )
 
     return jsonify({
-        'status': 'queued',
-        'task': task.id
+        'status': 'ingestion.queued',
+        'task_id': task.id,
+        'object_key': response['object_key']
     })

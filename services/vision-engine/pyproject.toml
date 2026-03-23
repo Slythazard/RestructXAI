@@ -2,15 +2,23 @@
 name = "vision-engine"
 version = "0.1.0"
 description = "Add your description here"
-readme = "README.md"
+# readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["flask>=3.1.2", "paddleocr[all]", "paddlepaddle-gpu==3.2.0"]
+dependencies = [
+  "flask>=3.1.2",
+  "paddleocr[all]",
+  "celery",
+  "redis",
+  "paddlepaddle-gpu==3.2.0",
+  "flask-socketio>=5.6.0",
+  "minio>=7.2.20",
+  "runpod>=1.8.1",
+]
+
 [project.scripts]
 vision-ocr = "vision_engine.pp_ocr.ocr:main"
 vision-layout = "vision_engine.pp_structure.main:parseLayout"
-
-[tool.uv.sources]
-paddlepaddle-gpu = { index = "paddle" }
+vision-engine = "vision_engine.main:app"
 
 [[tool.uv.index]]
 name = "pypi"
@@ -18,9 +26,13 @@ url = "https://pypi.org/simple"
 default = true
 
 [[tool.uv.index]]
-name = "paddle"
+name = "paddlepaddle"
 url = "https://www.paddlepaddle.org.cn/packages/stable/cu126/"
+explicit = true
+
+[tool.uv.sources]
+paddlepaddle-gpu = { index = "paddlepaddle" }
 
 [build-system]
-requires = ["uv_build>=0.9.10,<0.10.0"]
+requires = ["uv_build>=0.9.10"]
 build-backend = "uv_build"

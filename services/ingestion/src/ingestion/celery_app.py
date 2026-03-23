@@ -10,6 +10,16 @@ celery = Celery(
     broker=MESSAGE_BROKER_URL,
     backend=REDIS_URL)
 
+celery.conf.task_default_queue = "ingestion"
+
+vision_celery = Celery(
+    'vision',
+    broker=MESSAGE_BROKER_URL,
+    backend=REDIS_URL
+)
+
+vision_celery.conf.task_default_queue = "vision"
+
 celery.autodiscover_tasks(['ingestion.tasks'])
 
 

@@ -1,30 +1,19 @@
-from flask import jsonify
-import pika
-import logger
-import time
+from celery import Celery
+import os
 
-if __name__ == '__main__':
+RABBIT_SERVER_URL = os.getenv("RABBITMQ_SERVER_URL")
+REDIS_SERVER_URL = os.getenv("REDIS_SERVER_URL")
 
-    params = pika.ConnectionParameters('localhost')
-    connection = pika.BlockingConnection(params)
-    channel = connection.channel()
-    queue = channel.queue_declare(queue='vision')
+celery = Celery('vision', broker=RABBIT_SERVER_URL, backend=REDIS_SERVER_URL)
+celery.conf.task_default_queue = 'vision'
 
-    def callback(ch, method, props, body):
-        logger.log(body)
-        time.sleep(10)
-        body = {'message': 'Processing Done.'}
-        ch.basic_publish(
-            exchange='',
-            routing_key=props.reply_to,
-            body=jsonify(body)
-        )
-        return logger.log(body)
+celery.autodiscover_tasks(['vision_engine.tasks'])
 
-    channel.basic_consume(
-        queue='vision',
-        on_message_callback=callback,
-        auto_ack=True
-    )
 
-    channel.start_consuming()
+def app():
+    argv = ['worker', '--loglevel=info', '--pool=solo']
+    celery.worker_main(argv=argv)
+
+
+if __name__ == "__main__":
+    app()
