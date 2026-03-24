@@ -14,9 +14,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --package vision-engine
 
 # 2. Copy source, then install the project itself
-COPY ./services/vision-engine/src/vision_engine/handler.py .
-COPY ./services/vision-engine/src/vision_engine/config.py .
-# COPY ./service/vision-engine/.env .
+COPY ./services/vision-engine/src/ /app/services/vision-engine/src/
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
