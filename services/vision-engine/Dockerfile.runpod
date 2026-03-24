@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install paddleocr paddlepaddle paddlex
+RUN pip install paddlepaddle "paddleocr[all]"
 
 ENV PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True
 
