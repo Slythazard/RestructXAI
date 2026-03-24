@@ -33,6 +33,9 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 ENV VIRTUAL_ENV=/app/.venv \
     PATH="/app/.venv/bin:$PATH"
+ENV PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True
+ENV PADDLE_DEVICE=cpu
+ENV CUDA_VISIBLE_DEVICES=""
 
 RUN python - <<EOF
 from paddleocr import PPStructureV3
