@@ -1,3 +1,15 @@
+FROM python:3.10-slim AS model-downloader
+
+RUN pip install paddleocr paddlex
+
+ENV PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True
+
+RUN python - <<EOF
+from paddleocr import PPStructureV3
+PPStructureV3(device="cpu")
+print("Models downloaded")
+EOF
+
 FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04 AS builder
 
 RUN apt-get update && apt-get install -y \
