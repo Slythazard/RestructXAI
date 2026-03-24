@@ -36,7 +36,7 @@ ENV VIRTUAL_ENV=/app/.venv \
 
 RUN python - <<EOF
 from paddleocr import PPStructureV3
-PPStructureV3()
+PPStructureV3(device="cpu")
 print("Model Loaded Successfully")
 EOF
 
