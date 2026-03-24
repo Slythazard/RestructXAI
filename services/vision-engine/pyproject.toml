@@ -27,7 +27,7 @@ default = true
 
 [[tool.uv.index]]
 name = "paddlepaddle"
-url = "https://www.paddlepaddle.org.cn/packages/stable/cu126/"
+url = "https://www.paddlepaddle.org.cn/packages/stable/cu118/"
 explicit = true
 
 [tool.uv.sources]
