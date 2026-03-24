@@ -22,10 +22,13 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=services/vision-engine/pyproject.toml,target=services/vision-engine/pyproject.toml \
     uv sync --frozen --package vision-engine
 
-
 ENV VIRTUAL_ENV=/app/.venv \
     PATH="/app/.venv/bin:$PATH"
 
-RUN python -c "from paddleocr import PPStructureV3 layout = PPStructureV3() print('Model Loaded Successfully')"
+RUN python - <<EOF
+from paddleocr import PPStructureV3
+PPStructureV3()
+print("Model Loaded Successfully")
+EOF
 
 CMD ["uv","run","handler.py"]
