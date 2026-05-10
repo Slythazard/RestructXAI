@@ -13,4 +13,4 @@ dependencies = [
 environments = ["sys_platform == 'linux'"]
 
 [tool.uv.workspace]
-members = ["services/*", "libs/*"]
+members = ["services/*", "core"]

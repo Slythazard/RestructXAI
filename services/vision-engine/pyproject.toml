@@ -13,6 +13,7 @@ dependencies = [
   "flask-socketio>=5.6.0",
   "minio>=7.2.20",
   "runpod>=1.8.1",
+  "core",
 ]
 
 [project.scripts]
@@ -32,6 +33,7 @@ explicit = true
 
 [tool.uv.sources]
 paddlepaddle-gpu = { index = "paddlepaddle" }
+core = { workspace = true }
 
 [build-system]
 requires = ["uv_build>=0.9.10"]

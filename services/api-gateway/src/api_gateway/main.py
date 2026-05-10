@@ -6,6 +6,7 @@ import logging  # type: ignore
 from .sockets import sio  # type: ignore
 import os  # type:ignore
 from flask_cors import CORS  # type: ignore
+from .sockets.subscribers import start_subscriber
 
 
 REDIS_SERVER_URL = os.getenv("REDIS_SERVER_URL", "redis://localhost:6379")
@@ -23,15 +24,7 @@ sio.init_app(
     message_queue=REDIS_SERVER_URL
 )
 
-
-@sio.on('connect')
-def ws_connect_handler():
-    app.logger.info('Hello Client')
-
-
-@sio.on('task_update')
-def task_update_handler(data):
-    app.logger.info(f'result : {data}')
+start_subscriber()
 
 
 @app.route('/')

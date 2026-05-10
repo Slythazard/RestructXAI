@@ -4,10 +4,13 @@ WORKDIR /app
 
 ENV UV_COMPILE_BYTECODE=1
 
+COPY ./core/ ./core/
+
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=services/ingestion/pyproject.toml,target=services/ingestion/pyproject.toml \
+    --mount=type=bind,source=core/pyproject.toml,target=core/pyproject.toml \
     uv sync --frozen --no-install-workspace --package ingestion
 
 COPY ./services/ingestion/src/ /app/services/ingestion/src/
@@ -17,6 +20,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=services/ingestion/pyproject.toml,target=services/ingestion/pyproject.toml \
+    --mount=type=bind,source=core/pyproject.toml,target=core/pyproject.toml \
     uv sync --frozen --package ingestion
 #---------------------------------Final Stage Building------------------------------------------
 # FROM ghcr.io/astral-sh/uv:python3.14-trixie-slim

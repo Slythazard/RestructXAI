@@ -64,6 +64,7 @@ export function ChatInterface({ onBack }: ChatInterfaceProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const socketRef = useRef<any>(null);
+  const activeTaskMessageId = useRef<string | null>(null);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -98,15 +99,36 @@ export function ChatInterface({ onBack }: ChatInterfaceProps) {
     socket.on("task_update", (data: any) => {
       console.log("Task Update:", data);
 
-      const aiMessage: Message = {
-        id: Date.now().toString(),
-        role: "ai",
-        content: data.message || "Processing...",
-        hasVisualization: !!data.chart_data,
-        data: data.chart_data,
-      };
+      setMessages((prev: Message[]) => {
+        // If no active message → create one
+        if (!activeTaskMessageId.current) {
+          const newId = Date.now().toString();
+          activeTaskMessageId.current = newId;
 
-      setMessages((prev: Message[]) => [...prev, aiMessage]);
+          return [
+            ...prev,
+            {
+              id: newId,
+              role: "ai",
+              content: data.message || "Processing...",
+              hasVisualization: !!data.chart_data,
+              data: data.chart_data,
+            },
+          ];
+        }
+
+        // Otherwise update existing message
+        return prev.map((msg) =>
+          msg.id === activeTaskMessageId.current
+            ? {
+                ...msg,
+                content: data.message || msg.content,
+                hasVisualization: !!data.chart_data,
+                data: data.chart_data || msg.data,
+              }
+            : msg,
+        );
+      });
     });
 
     socket.on("disconnect", () => {
@@ -354,6 +376,7 @@ export function ChatInterface({ onBack }: ChatInterfaceProps) {
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    activeTaskMessageId.current = null;
     if (!file) return;
 
     e.target.value = "";

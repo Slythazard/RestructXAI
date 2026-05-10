@@ -1,13 +1,14 @@
 [project]
-name = "proto-definitions"
+name = "core"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.11"
-dependencies = []
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.12.5",
+    "redis",
+]
 
-[project.scripts]
-proto-definitions = "proto_definitions:main"
 
 [build-system]
 requires = ["uv_build>=0.9.10,<0.10.0"]

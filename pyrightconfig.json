@@ -9,6 +9,7 @@
     "services/ingestion",
     "services/rag-orchestrator",
     "services/med-analyzer",
-    "services/logic-gate"
+    "services/logic-gate",
+    "core"
   ]
 }
